@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Social Media Intelligence Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #07080f;
+    --surface: #0d1020;
+    --surface2: #141829;
+    --border: #1e2540;
+    --accent1: #5b6ef5;
+    --accent2: #f55b8a;
+    --accent3: #5bf5c8;
+    --accent4: #f5b85b;
+    --accent5: #b85bf5;
+    --text: #e8eaf6;
+    --muted: #6b7299;
+    --glow: rgba(91,110,245,0.18);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* ─── WELCOME PAGE ─── */
+  #welcome {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  #welcome.hidden { opacity:0; pointer-events:none; transform: scale(1.04); }
+
+  #welcome-bg {
+    position: absolute;
+    inset: 0;
+    background-image: url('https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=1800&q=80');
+    background-size: cover;
+    background-position: center;
+    filter: brightness(0.28) saturate(1.4);
+    transition: filter 0.8s;
+  }
+  #welcome:not(.hidden) #welcome-bg { animation: bgpulse 8s ease-in-out infinite; }
+  @keyframes bgpulse {
+    0%,100% { filter: brightness(0.28) saturate(1.4); }
+    50% { filter: brightness(0.34) saturate(1.6); }
+  }
+
+  .welcome-overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 70% at 50% 60%, rgba(91,110,245,0.22) 0%, transparent 70%),
+                linear-gradient(to bottom, rgba(7,8,15,0.3) 0%, rgba(7,8,15,0.7) 100%);
+  }
+
+  /* Animated grid */
+  .grid-lines {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(91,110,245,0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(91,110,245,0.07) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: gridscroll 18s linear infinite;
+  }
+  @keyframes gridscroll { from{background-position:0 0} to{background-position:0 60px} }
+
+  /* Floating orbs */
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    animation: float 9s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .orb1 { width:320px;height:320px; background:rgba(91,110,245,0.25); top:-80px; left:-60px; animation-delay:0s; }
+  .orb2 { width:280px;height:280px; background:rgba(245,91,138,0.2); bottom:-60px; right:-40px; animation-delay:-3s; }
+  .orb3 { width:200px;height:200px; background:rgba(91,245,200,0.15); top:40%; left:70%; animation-delay:-6s; }
+  @keyframes float {
+    0%,100%{transform:translateY(0) scale(1)}
+    50%{transform:translateY(-30px) scale(1.06)}
+  }
+
+  .welcome-content { position:relative; z-index:2; }
+
+  .welcome-badge {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.22em;
+    color: var(--accent3);
+    text-transform: uppercase;
+    border: 1px solid rgba(91,245,200,0.35);
+    padding: 5px 18px;
+    border-radius: 50px;
+    margin-bottom: 28px;
+    animation: fadeup 0.9s ease both;
+  }
+
+  .welcome-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3.5rem, 9vw, 8rem);
+    line-height: 0.95;
+    letter-spacing: 0.02em;
+    background: linear-gradient(135deg, #fff 30%, var(--accent1) 70%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 22px;
+    animation: fadeup 1s 0.15s ease both;
+  }
+
+  .welcome-sub {
+    font-size: 1.05rem;
+    color: rgba(232,234,246,0.6);
+    max-width: 480px;
+    line-height: 1.7;
+    margin: 0 auto 42px;
+    font-weight: 300;
+    animation: fadeup 1s 0.3s ease both;
+  }
+
+  .stat-pills {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 48px;
+    animation: fadeup 1s 0.45s ease both;
+  }
+  .pill {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 50px;
+    padding: 8px 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--text);
+    backdrop-filter: blur(12px);
+  }
+  .pill span { color: var(--accent3); font-weight: 600; }
+
+  .enter-btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: #fff;
+    background: linear-gradient(135deg, var(--accent1) 0%, var(--accent2) 100%);
+    border: none;
+    padding: 16px 48px;
+    border-radius: 50px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    animation: fadeup 1s 0.6s ease both;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 0 40px rgba(91,110,245,0.35);
+  }
+  .enter-btn::after {
+    content:'';
+    position:absolute;
+    inset:0;
+    background:rgba(255,255,255,0.12);
+    opacity:0;
+    transition:opacity 0.2s;
+  }
+  .enter-btn:hover { transform:translateY(-2px) scale(1.02); box-shadow:0 0 60px rgba(91,110,245,0.5); }
+  .enter-btn:hover::after { opacity:1; }
+
+  @keyframes fadeup {
+    from { opacity:0; transform:translateY(24px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  /* ─── DASHBOARD ─── */
+  #dashboard {
+    min-height: 100vh;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+    pointer-events: none;
+  }
+  #dashboard.visible { opacity:1; pointer-events:all; }
+
+  .dash-header {
+    background: rgba(13,16,32,0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top:0; z-index:100;
+  }
+  .dash-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.08em;
+    background: linear-gradient(90deg, var(--accent1), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .dash-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+  .dash-meta span { color: var(--accent3); }
+
+  .main-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 18px;
+    padding: 28px 28px 40px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  /* KPI cards */
+  .kpi-row { grid-column: 1/-1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .kpi-card:hover { border-color: var(--accent1); transform: translateY(-2px); }
+  .kpi-card::before {
+    content:'';
+    position:absolute;
+    top:-40px; right:-40px;
+    width:120px; height:120px;
+    border-radius:50%;
+    opacity:0.12;
+  }
+  .kpi-card:nth-child(1)::before { background:var(--accent1); }
+  .kpi-card:nth-child(2)::before { background:var(--accent2); }
+  .kpi-card:nth-child(3)::before { background:var(--accent3); }
+  .kpi-card:nth-child(4)::before { background:var(--accent4); }
+
+  .kpi-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .kpi-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.8rem;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .kpi-card:nth-child(1) .kpi-value { color:var(--accent1); }
+  .kpi-card:nth-child(2) .kpi-value { color:var(--accent2); }
+  .kpi-card:nth-child(3) .kpi-value { color:var(--accent3); }
+  .kpi-card:nth-child(4) .kpi-value { color:var(--accent4); }
+
+  .kpi-sub { font-size: 0.78rem; color: var(--muted); }
+  .kpi-badge {
+    display: inline-block;
+    font-family:'DM Mono', monospace;
+    font-size:0.65rem;
+    padding:2px 8px;
+    border-radius:4px;
+    margin-left:6px;
+  }
+  .kpi-badge.up { background:rgba(91,245,200,0.12); color:var(--accent3); }
+  .kpi-badge.down { background:rgba(245,91,138,0.12); color:var(--accent2); }
+
+  /* Chart panels */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .panel:hover { border-color: rgba(91,110,245,0.4); }
+  .panel-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.15rem;
+    letter-spacing: 0.06em;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .panel-desc {
+    font-size: 0.74rem;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  /* Layout spans */
+  .col-6 { grid-column: span 6; }
+  .col-4 { grid-column: span 4; }
+  .col-8 { grid-column: span 8; }
+  .col-5 { grid-column: span 5; }
+  .col-7 { grid-column: span 7; }
+  .col-3 { grid-column: span 3; }
+  .col-12 { grid-column: 1/-1; }
+
+  canvas { max-height: 260px; }
+  .canvas-tall canvas { max-height: 310px; }
+
+  /* Drilldown table */
+  .drill-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+  .drill-table th {
+    font-family:'DM Mono', monospace;
+    font-size:0.64rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--muted);
+    padding:8px 10px;
+    text-align:left;
+    border-bottom:1px solid var(--border);
+  }
+  .drill-table td {
+    padding:10px 10px;
+    border-bottom:1px solid rgba(30,37,64,0.6);
+    color:var(--text);
+    font-size:0.8rem;
+  }
+  .drill-table tr:hover td { background:rgba(91,110,245,0.05); }
+  .drill-table tr:last-child td { border-bottom:none; }
+
+  .bar-inline {
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .bar-track {
+    flex:1;
+    height:5px;
+    background:rgba(255,255,255,0.07);
+    border-radius:3px;
+    overflow:hidden;
+  }
+  .bar-fill {
+    height:100%;
+    border-radius:3px;
+    transition:width 1s ease;
+  }
+
+  /* Engagement score badges */
+  .score-badge {
+    display:inline-block;
+    font-family:'DM Mono',monospace;
+    font-size:0.7rem;
+    padding:3px 10px;
+    border-radius:20px;
+    font-weight:500;
+  }
+  .score-high { background:rgba(91,245,200,0.15); color:var(--accent3); border:1px solid rgba(91,245,200,0.3); }
+  .score-mid  { background:rgba(91,110,245,0.15); color:var(--accent1); border:1px solid rgba(91,110,245,0.3); }
+  .score-low  { background:rgba(245,91,138,0.15); color:var(--accent2); border:1px solid rgba(245,91,138,0.3); }
+
+  /* Insight cards */
+  .insight-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:4px; }
+  .insight-card {
+    background:var(--surface2);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px;
+  }
+  .insight-icon { font-size:1.4rem; margin-bottom:8px; }
+  .insight-title { font-size:0.72rem; color:var(--muted); font-family:'DM Mono',monospace; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:4px; }
+  .insight-body { font-size:0.85rem; color:var(--text); line-height:1.5; }
+  .insight-body strong { color:var(--accent3); }
+
+  /* Responsive */
+  @media(max-width:900px) {
+    .kpi-row { grid-template-columns:1fr 1fr; }
+    .col-6,.col-4,.col-8,.col-5,.col-7,.col-3 { grid-column:1/-1; }
+  }
+  @media(max-width:500px) {
+    .kpi-row { grid-template-columns:1fr; }
+    .insight-grid { grid-template-columns:1fr; }
+  }
+
+  /* Back button */
+  .back-btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 8px 18px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s, background 0.2s, transform 0.2s;
+  }
+  .back-btn:hover {
+    color: var(--text);
+    border-color: var(--accent1);
+    background: rgba(91,110,245,0.1);
+    transform: translateX(-2px);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width:6px; }
+  ::-webkit-scrollbar-track { background:var(--bg); }
+  ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+  /* Footer */
+  .dash-footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 40px 32px 32px;
+    margin-top: 20px;
+  }
+  .footer-inner {
+    max-width: 1600px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 40px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+  }
+  .footer-brand-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 0.08em;
+    background: linear-gradient(90deg, var(--accent1), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+  }
+  .footer-brand-desc {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 320px;
+  }
+  .footer-col-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.64rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent1);
+    margin-bottom: 14px;
+  }
+  .footer-col ul { list-style: none; }
+  .footer-col ul li {
+    font-size: 0.8rem;
+    color: var(--muted);
+    padding: 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .footer-col ul li::before {
+    content: '›';
+    color: var(--accent3);
+    font-weight: 700;
+  }
+  .footer-bottom {
+    max-width: 1600px;
+    margin: 24px auto 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .footer-copy {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--muted);
+  }
+  .footer-copy span { color: var(--accent3); }
+  .footer-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .footer-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+  @media(max-width:800px) {
+    .footer-inner { grid-template-columns: 1fr 1fr; }
+    .footer-brand { grid-column: 1/-1; }
+  }
+  @media(max-width:500px) {
+    .footer-inner { grid-template-columns: 1fr; }
+    .footer-bottom { flex-direction: column; align-items: flex-start; }
+  }
+
+  /* Section label */
+  .section-label {
+    grid-column:1/-1;
+    font-family:'DM Mono',monospace;
+    font-size:0.65rem;
+    letter-spacing:0.22em;
+    color:var(--muted);
+    text-transform:uppercase;
+    padding:8px 0 0;
+    border-top:1px solid var(--border);
+    margin-top:6px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ WELCOME PAGE ═══ -->
+<div id="welcome">
+  <div id="welcome-bg"></div>
+  <div class="welcome-overlay"></div>
+  <div class="grid-lines"></div>
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+
+  <div class="welcome-content">
+    <div class="welcome-badge">📊 Social Intelligence Report · 1,000 Users · 7 Platforms</div>
+    <h1 class="welcome-title">Social<br>Media<br>Decoded</h1>
+    <p class="welcome-sub">A deep-dive visual analysis of social media usage patterns, engagement behaviour, and platform intelligence across 1,000 users.</p>
+
+    <div class="stat-pills">
+      <div class="pill"><span>1,000</span> Users Analysed</div>
+      <div class="pill"><span>7</span> Platforms</div>
+      <div class="pill"><span>247k</span> min/day Total</div>
+      <div class="pill"><span>38.8%</span> Spend 300+ min/day</div>
+    </div>
+
+    <button class="enter-btn" onclick="enterDashboard()">↓ Enter Dashboard</button>
+  </div>
+</div>
+
+<!-- ═══ DASHBOARD ═══ -->
+<div id="dashboard">
+  <header class="dash-header">
+    <div class="dash-logo">SOCIAL INTEL</div>
+    <div class="dash-meta">Dataset: social_media_usage.csv · <span>1,000 records</span> · 7 apps · May 2026</div>
+    <button class="back-btn" onclick="goBack()">← Back to Home</button>
+  </header>
+
+  <div class="main-grid">
+
+    <!-- KPI ROW -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Users</div>
+        <div class="kpi-value">1,000</div>
+        <div class="kpi-sub">Across 7 platforms</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Avg Daily Time</div>
+        <div class="kpi-value">246<span style="font-size:1.4rem">min</span></div>
+        <div class="kpi-sub">4 hrs 6 min per user <span class="kpi-badge up">↑ heavy</span></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Avg Likes/Day</div>
+        <div class="kpi-value">94.8</div>
+        <div class="kpi-sub">Per user daily <span class="kpi-badge up">↑ high</span></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Top Platform</div>
+        <div class="kpi-value" style="font-size:1.9rem;line-height:1.1">Snapchat</div>
+        <div class="kpi-sub">Most total time spent</div>
+      </div>
+    </div>
+
+    <div class="section-label">Platform Breakdown</div>
+
+    <!-- DONUT: User Distribution -->
+    <div class="panel col-4">
+      <div class="panel-title">User Distribution</div>
+      <div class="panel-desc">Share of users per platform</div>
+      <canvas id="donutChart"></canvas>
+    </div>
+
+    <!-- BAR: Avg Minutes per Platform -->
+    <div class="panel col-8">
+      <div class="panel-title">Avg Daily Minutes by Platform</div>
+      <div class="panel-desc">Mean time spent daily — Instagram & Twitter lead; TikTok users spend least time per session</div>
+      <canvas id="barChart"></canvas>
+    </div>
+
+    <div class="section-label">Engagement Intelligence</div>
+
+    <!-- RADAR: Multi-metric comparison -->
+    <div class="panel col-5 canvas-tall">
+      <div class="panel-title">Engagement Radar</div>
+      <div class="panel-desc">Normalised scores: posts, likes, follows per platform</div>
+      <canvas id="radarChart"></canvas>
+    </div>
+
+    <!-- Scatter: Posts vs Likes -->
+    <div class="panel col-7 canvas-tall">
+      <div class="panel-title">Posts vs Likes — Efficiency Map</div>
+      <div class="panel-desc">Each platform's avg posts/day vs avg likes/day · bubble reveals engagement score</div>
+      <canvas id="bubbleChart"></canvas>
+    </div>
+
+    <div class="section-label">Time Behaviour & Distribution</div>
+
+    <!-- LINE (simulated): time distribution -->
+    <div class="panel col-7">
+      <div class="panel-title">Time-on-App Distribution</div>
+      <div class="panel-desc">How many users fall into each daily usage bucket (minutes/day)</div>
+      <canvas id="lineChart"></canvas>
+    </div>
+
+    <!-- Horizontal bar: total minutes -->
+    <div class="panel col-5">
+      <div class="panel-title">Total Cumulative Time</div>
+      <div class="panel-desc">Sum of all user minutes across platforms</div>
+      <canvas id="hbarChart"></canvas>
+    </div>
+
+    <div class="section-label">Drilldown — Platform Intelligence</div>
+
+    <!-- DRILLDOWN TABLE -->
+    <div class="panel col-12">
+      <div class="panel-title">Full Platform Drilldown</div>
+      <div class="panel-desc">All metrics with engagement scores and inline bars — click a row to highlight</div>
+      <table class="drill-table" id="drillTable">
+        <thead>
+          <tr>
+            <th>Platform</th>
+            <th>Users</th>
+            <th>Avg Min/Day</th>
+            <th>Time Share</th>
+            <th>Avg Posts</th>
+            <th>Avg Likes</th>
+            <th>Avg Follows</th>
+            <th>Likes/Post</th>
+            <th>Engagement Score</th>
+          </tr>
+        </thead>
+        <tbody id="drillBody"></tbody>
+      </table>
+    </div>
+
+    <div class="section-label">Key Insights</div>
+
+    <!-- INSIGHTS -->
+    <div class="panel col-12">
+      <div class="panel-title">AI Insights · What the Data Really Tells Us</div>
+      <div class="panel-desc">6 unique angles extracted from 1,000 user records</div>
+      <div class="insight-grid">
+        <div class="insight-card">
+          <div class="insight-icon">⏰</div>
+          <div class="insight-title">Heavy Usage Dominates</div>
+          <div class="insight-body"><strong>38.8%</strong> of users spend over 300 minutes (5 hours) daily on social media — far beyond healthy usage benchmarks of ~60 min/day.</div>
+        </div>
+        <div class="insight-card">
+          <div class="insight-icon">🏆</div>
+          <div class="insight-title">Facebook Wins Engagement</div>
+          <div class="insight-body">Facebook scores the highest engagement ratio at <strong>12.86 likes+follows per post</strong> — despite lower avg session time vs Instagram and Twitter.</div>
+        </div>
+        <div class="insight-card">
+          <div class="insight-icon">⚡</div>
+          <div class="insight-title">TikTok Paradox</div>
+          <div class="insight-body">TikTok users spend the <strong>least time per day (233 min avg)</strong> yet post the most (9.6/day avg), suggesting short, high-frequency content creation.</div>
+        </div>
+        <div class="insight-card">
+          <div class="insight-icon">📸</div>
+          <div class="insight-title">Instagram Posts Most</div>
+          <div class="insight-body">Instagram leads with <strong>11.3 avg posts/day</strong> and 264 min session time — indicating deeply habitual, content-heavy users.</div>
+        </div>
+        <div class="insight-card">
+          <div class="insight-icon">🔗</div>
+          <div class="insight-title">LinkedIn Punches Above</div>
+          <div class="insight-body">LinkedIn has the most users (<strong>147</strong>) and maintains strong engagement (12.0 score) despite typically lower engagement expectations for a professional platform.</div>
+        </div>
+        <div class="insight-card">
+          <div class="insight-icon">📉</div>
+          <div class="insight-title">Twitter Likes Deficit</div>
+          <div class="insight-body">Twitter has the <strong>lowest likes/post ratio (8.44)</strong> among all platforms — content gets less positive reinforcement despite high session times of 257 min/day.</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-grid -->
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer class="dash-footer">
+    <div class="footer-inner">
+      <div class="footer-col footer-brand">
+        <div class="footer-brand-name">SOCIAL INTEL</div>
+        <div class="footer-brand-desc">A visual intelligence report analysing social media usage behaviour across 1,000 users and 7 major platforms. Data covers daily time spent, posting habits, likes, and follower growth.</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Dataset</div>
+        <ul>
+          <li>1,000 User Records</li>
+          <li>7 Platforms Covered</li>
+          <li>6 Metrics per User</li>
+          <li>Source: social_media_usage.csv</li>
+          <li>Collected: Oct 2024</li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Platforms</div>
+        <ul>
+          <li>Instagram · 140 users</li>
+          <li>Snapchat · 156 users</li>
+          <li>LinkedIn · 147 users</li>
+          <li>TikTok · 141 users</li>
+          <li>Pinterest · 140 users</li>
+          <li>Twitter · 140 users</li>
+          <li>Facebook · 136 users</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2026 Social Intel Dashboard · Built from <span>archive.zip</span> · 1,000 records analysed</div>
+      <div class="footer-tags">
+        <span class="footer-tag">Data Analysis</span>
+        <span class="footer-tag">7 Charts</span>
+        <span class="footer-tag">Engagement Metrics</span>
+        <span class="footer-tag">Platform Intelligence</span>
+        <span class="footer-tag">247k min/day</span>
+      </div>
+    </div>
+  </footer>
+
+</div><!-- /dashboard -->
+
+<script>
+// ─── DATA ───
+const data = {
+  apps: ['Pinterest','Facebook','Instagram','TikTok','LinkedIn','Twitter','Snapchat'],
+  counts: [140,136,140,141,147,140,156],
+  avgMin: [236.2,247.2,264.1,233.4,236.1,257.7,256.6],
+  avgPosts: [10.6,9.5,11.3,9.6,10.2,10.7,10.0],
+  avgLikes: [92.1,99.3,99.0,91.4,97.1,90.2,93.8],
+  avgFollows: [24.8,23.1,25.9,24.4,25.1,23.9,25.5],
+  totalMin: [33069,33615,36974,32912,34700,36076,40022],
+  likesPer: [8.67,10.43,8.74,9.56,9.54,8.44,9.38],
+  engScore: [11.0,12.86,11.02,12.12,12.0,10.68,11.93],
+  timeDist: {
+    labels:['0–60','61–120','121–180','181–240','241–300','300+'],
+    values:[127,137,108,112,128,388]
+  }
+};
+
+const colors = {
+  Pinterest:'#e60023', Facebook:'#1877f2', Instagram:'#e1306c',
+  TikTok:'#69c9d0', LinkedIn:'#0a66c2', Twitter:'#1da1f2', Snapchat:'#fffc00'
+};
+const palette = ['#e60023','#1877f2','#e1306c','#69c9d0','#0a66c2','#1da1f2','#fffc00'];
+const paletteAlpha = (i,a) => palette[i].replace('#','rgba(').replace(/([0-9a-f]{2})/gi,(_,p)=>parseInt(p,16)+',').slice(0,-1)+a+')';
+
+Chart.defaults.color = '#6b7299';
+Chart.defaults.borderColor = '#1e2540';
+Chart.defaults.font.family = 'DM Sans';
+
+// ─── DONUT ───
+new Chart(document.getElementById('donutChart').getContext('2d'), {
+  type:'doughnut',
+  data:{
+    labels: data.apps,
+    datasets:[{
+      data: data.counts,
+      backgroundColor: palette,
+      borderColor: '#07080f',
+      borderWidth: 3,
+      hoverOffset: 8
+    }]
+  },
+  options:{
+    responsive:true,
+    cutout:'68%',
+    plugins:{
+      legend:{
+        position:'bottom',
+        labels:{ padding:12, font:{size:11}, color:'#6b7299', boxWidth:10 }
+      },
+      tooltip:{
+        callbacks:{
+          label: ctx => ` ${ctx.label}: ${ctx.raw} users (${(ctx.raw/10).toFixed(1)}%)`
+        }
+      }
+    }
+  }
+});
+
+// ─── BAR: avg minutes ───
+new Chart(document.getElementById('barChart').getContext('2d'), {
+  type:'bar',
+  data:{
+    labels: data.apps,
+    datasets:[{
+      label:'Avg Min/Day',
+      data: data.avgMin,
+      backgroundColor: palette.map(c => c+'bb'),
+      borderColor: palette,
+      borderWidth: 1.5,
+      borderRadius: 6,
+      borderSkipped: false
+    }]
+  },
+  options:{
+    responsive:true,
+    plugins:{
+      legend:{display:false},
+      tooltip:{ callbacks:{ label: ctx=>`${ctx.raw} min/day` } }
+    },
+    scales:{
+      y:{
+        min:200,
+        grid:{ color:'rgba(30,37,64,0.8)' },
+        ticks:{ callback: v=>v+'m' }
+      },
+      x:{ grid:{ display:false } }
+    }
+  }
+});
+
+// ─── RADAR ───
+new Chart(document.getElementById('radarChart').getContext('2d'), {
+  type:'radar',
+  data:{
+    labels:['Avg Time','Avg Posts','Avg Likes','Avg Follows','Eng. Score'],
+    datasets: data.apps.map((app,i)=>({
+      label: app,
+      data:[
+        ((data.avgMin[i]-220)/50)*100,
+        ((data.avgPosts[i]-9)/3)*100,
+        ((data.avgLikes[i]-88)/15)*100,
+        ((data.avgFollows[i]-22)/5)*100,
+        ((data.engScore[i]-10)/3)*100
+      ],
+      borderColor: palette[i],
+      backgroundColor: palette[i]+'22',
+      borderWidth: 1.5,
+      pointRadius: 3,
+      pointBackgroundColor: palette[i]
+    }))
+  },
+  options:{
+    responsive:true,
+    scales:{
+      r:{
+        min:0, max:100,
+        grid:{ color:'#1e2540' },
+        angleLines:{ color:'#1e2540' },
+        ticks:{ display:false },
+        pointLabels:{ font:{size:10}, color:'#6b7299' }
+      }
+    },
+    plugins:{
+      legend:{ position:'bottom', labels:{ padding:8, font:{size:10}, color:'#6b7299', boxWidth:8 } }
+    }
+  }
+});
+
+// ─── BUBBLE: posts vs likes ───
+new Chart(document.getElementById('bubbleChart').getContext('2d'), {
+  type:'bubble',
+  data:{
+    datasets: data.apps.map((app,i)=>({
+      label: app,
+      data:[{
+        x: data.avgPosts[i],
+        y: data.avgLikes[i],
+        r: data.engScore[i] * 1.8
+      }],
+      backgroundColor: palette[i]+'88',
+      borderColor: palette[i],
+      borderWidth: 2
+    }))
+  },
+  options:{
+    responsive:true,
+    plugins:{
+      legend:{ position:'bottom', labels:{ padding:10, font:{size:10}, color:'#6b7299', boxWidth:8 } },
+      tooltip:{
+        callbacks:{
+          label: ctx=>`${ctx.dataset.label}: ${ctx.raw.x} posts, ${ctx.raw.y} likes, score ${data.engScore[data.apps.indexOf(ctx.dataset.label)]}`
+        }
+      }
+    },
+    scales:{
+      x:{
+        title:{ display:true, text:'Avg Posts/Day', color:'#6b7299', font:{size:11} },
+        grid:{ color:'rgba(30,37,64,0.8)' },
+        min:8.5, max:12
+      },
+      y:{
+        title:{ display:true, text:'Avg Likes/Day', color:'#6b7299', font:{size:11} },
+        grid:{ color:'rgba(30,37,64,0.8)' },
+        min:87, max:103
+      }
+    }
+  }
+});
+
+// ─── LINE: time distribution ───
+new Chart(document.getElementById('lineChart').getContext('2d'), {
+  type:'line',
+  data:{
+    labels: data.timeDist.labels,
+    datasets:[{
+      label:'Number of Users',
+      data: data.timeDist.values,
+      borderColor:'#5b6ef5',
+      backgroundColor:'rgba(91,110,245,0.12)',
+      fill:true,
+      tension:0.4,
+      pointRadius:5,
+      pointBackgroundColor:'#5b6ef5',
+      pointBorderColor:'#07080f',
+      pointBorderWidth:2
+    }]
+  },
+  options:{
+    responsive:true,
+    plugins:{
+      legend:{display:false},
+      tooltip:{ callbacks:{ label: ctx=>`${ctx.raw} users` } }
+    },
+    scales:{
+      y:{
+        grid:{ color:'rgba(30,37,64,0.8)' },
+        ticks:{ callback: v=>v+' users' }
+      },
+      x:{ grid:{ display:false } }
+    }
+  }
+});
+
+// ─── HORIZONTAL BAR: total minutes ───
+new Chart(document.getElementById('hbarChart').getContext('2d'), {
+  type:'bar',
+  data:{
+    labels: data.apps,
+    datasets:[{
+      label:'Total Minutes',
+      data: data.totalMin,
+      backgroundColor: palette.map(c=>c+'99'),
+      borderColor: palette,
+      borderWidth:1.5,
+      borderRadius:5,
+      borderSkipped:false
+    }]
+  },
+  options:{
+    indexAxis:'y',
+    responsive:true,
+    plugins:{
+      legend:{display:false},
+      tooltip:{ callbacks:{ label: ctx=>`${ctx.raw.toLocaleString()} total min` } }
+    },
+    scales:{
+      x:{
+        grid:{ color:'rgba(30,37,64,0.8)' },
+        ticks:{ callback: v=>(v/1000).toFixed(0)+'k' }
+      },
+      y:{ grid:{ display:false } }
+    }
+  }
+});
+
+// ─── DRILLDOWN TABLE ───
+const tbody = document.getElementById('drillBody');
+const maxMin = Math.max(...data.avgMin);
+const maxTotal = Math.max(...data.totalMin);
+
+data.apps.forEach((app,i) => {
+  const pct = ((data.totalMin[i]/data.totalMin.reduce((a,b)=>a+b,0))*100).toFixed(1);
+  const score = data.engScore[i];
+  const scoreClass = score>=12.5?'score-high':score>=11.5?'score-mid':'score-low';
+
+  const row = document.createElement('tr');
+  row.innerHTML = `
+    <td style="font-weight:600;color:${palette[i]}">${app}</td>
+    <td>${data.counts[i]}</td>
+    <td>
+      <div class="bar-inline">
+        ${data.avgMin[i]}m
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${(data.avgMin[i]/maxMin*100).toFixed(0)}%;background:${palette[i]}"></div>
+        </div>
+      </div>
+    </td>
+    <td>${pct}%</td>
+    <td>${data.avgPosts[i]}</td>
+    <td>${data.avgLikes[i]}</td>
+    <td>${data.avgFollows[i]}</td>
+    <td>${data.likesPer[i]}</td>
+    <td><span class="score-badge ${scoreClass}">${score}</span></td>
+  `;
+  row.style.cursor='pointer';
+  row.addEventListener('click',()=>{
+    document.querySelectorAll('#drillBody tr').forEach(r=>r.style.background='');
+    row.style.background='rgba(91,110,245,0.07)';
+  });
+  tbody.appendChild(row);
+});
+
+// ─── ENTER DASHBOARD ───
+function enterDashboard() {
+  const welcome = document.getElementById('welcome');
+  const dash = document.getElementById('dashboard');
+  welcome.classList.add('hidden');
+  dash.classList.add('visible');
+  setTimeout(()=>{ welcome.style.display='none'; }, 900);
+  window.scrollTo(0,0);
+}
+
+function goBack() {
+  const welcome = document.getElementById('welcome');
+  const dashboard = document.getElementById('dashboard');
+
+  welcome.style.display = 'flex';
+
+  welcome.classList.remove('hidden');
+  dashboard.classList.remove('visible');
+
+  window.scrollTo(0, 0);
+}
+</script>
+
+<!-- ═══ FOOTER ═══ -->
+<footer id="site-footer">
+  <div class="footer-inner">
+    <div class="footer-glow"></div>
+
+    <div class="footer-left">
+      <div class="footer-logo">SOCIAL INTEL</div>
+      <div class="footer-tagline">Turning raw data into visual clarity.</div>
+    </div>
+
+    <div class="footer-center">
+      <div class="footer-divider-v"></div>
+      <div class="footer-built">
+        <span class="footer-label">Built by</span>
+        <span class="footer-name">Abarna. S</span>
+      </div>
+      <div class="footer-divider-v"></div>
+      <div class="footer-source">
+        <span class="footer-label">Data from</span>
+        <a class="footer-link" href="https://www.kaggle.com" target="_blank" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-right:5px">
+            <path d="M16 0C7.163 0 0 7.163 0 16s7.163 16 16 16 16-7.163 16-16S24.837 0 16 0z" fill="#20BEFF"/>
+            <path d="M22.5 10.5l-5.5 5 5.5 6H19l-4.5-5.2V21.5H12V10.5h2.5v5.1l4.2-5.1H22.5z" fill="#fff"/>
+          </svg>
+          Kaggle Dataset
+        </a>
+      </div>
+    </div>
+
+    <div class="footer-right">
+      <div class="footer-stat-row">
+        <div class="footer-stat"><span>1,000</span> users</div>
+        <div class="footer-stat"><span>7</span> platforms</div>
+        <div class="footer-stat"><span>6</span> metrics</div>
+      </div>
+      <div class="footer-copy">© 2026 · Social Media Intelligence Report</div>
+    </div>
+  </div>
+</footer>
+
+<style>
+#site-footer {
+  position: relative;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.footer-glow {
+  position: absolute;
+  bottom: -60px; left: 50%; transform: translateX(-50%);
+  width: 500px; height: 140px;
+  background: radial-gradient(ellipse, rgba(91,110,245,0.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.footer-inner {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 28px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.footer-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.3rem;
+  letter-spacing: 0.1em;
+  background: linear-gradient(90deg, var(--accent1), var(--accent3));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 4px;
+}
+
+.footer-tagline {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.footer-center {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.footer-divider-v {
+  width: 1px;
+  height: 36px;
+  background: var(--border);
+}
+
+.footer-label {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.footer-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.25rem;
+  letter-spacing: 0.06em;
+  background: linear-gradient(135deg, var(--accent2), var(--accent4));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.footer-link {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #20BEFF;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.footer-link:hover { opacity: 0.75; }
+
+.footer-stat-row {
+  display: flex;
+  gap: 18px;
+  margin-bottom: 6px;
+}
+
+.footer-stat {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.footer-stat span {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--accent3);
+  margin-right: 3px;
+}
+
+.footer-copy {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  color: rgba(107,114,153,0.5);
+  text-align: right;
+}
+
+@media(max-width:700px) {
+  .footer-inner { flex-direction:column; align-items:flex-start; gap:18px; }
+  .footer-copy { text-align:left; }
+  .footer-divider-v { display:none; }
+}
+</style>
+</body>
+</html>
