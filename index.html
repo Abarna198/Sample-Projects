@@ -1038,6 +1038,15 @@ function enterDashboard() {
 }
 </script>
 
+  function goBack() {
+  const welcome = document.getElementById('welcome');
+  const dashboard = document.getElementById('dashboard');
+  welcome.style.display = 'flex';
+  welcome.classList.remove('hidden');
+  dashboard.classList.remove('visible');
+
+  window.scrollTo(0, 0);
+}
 <!-- ═══ FOOTER ═══ -->
 <footer id="site-footer">
   <div class="footer-inner">
