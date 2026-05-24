@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI Impact on Jobs 2030 – Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #04080f;
+    --bg2: #080f1c;
+    --surface: rgba(255,255,255,0.04);
+    --border: rgba(255,255,255,0.08);
+    --cyan: #00e5ff;
+    --gold: #ffc046;
+    --rose: #ff5c7d;
+    --green: #39e09b;
+    --purple: #b47cff;
+    --text: #e8eaf2;
+    --muted: #7a8099;
+    --radius: 16px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── PAGES ── */
+  .page { display: none; min-height: 100vh; flex-direction: column; }
+  .page.active { display: flex; }
+
+  /* ── PAGE 1 – WELCOME ── */
+  #page1 {
+    position: relative;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0; z-index: 0;
+    background-image: url('https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1800&q=80');
+    background-size: cover;
+    background-position: center;
+    filter: brightness(0.25) saturate(1.3);
+    animation: pulse-bg 10s ease-in-out infinite alternate;
+  }
+  @keyframes pulse-bg { from { filter: brightness(0.22) saturate(1.2); } to { filter: brightness(0.3) saturate(1.5); } }
+  .hero-overlay {
+    position: absolute; inset: 0; z-index: 1;
+    background: radial-gradient(ellipse at 50% 60%, rgba(0,229,255,0.12) 0%, transparent 70%),
+                linear-gradient(to bottom, transparent 40%, #04080f 100%);
+  }
+  .hero-content { position: relative; z-index: 2; max-width: 820px; padding: 2rem; animation: fadeUp 1.2s ease both; }
+  .hero-tag {
+    display: inline-block; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: .78rem;
+    letter-spacing: .22em; text-transform: uppercase; color: var(--cyan);
+    border: 1px solid rgba(0,229,255,.35); border-radius: 999px;
+    padding: .4rem 1.2rem; margin-bottom: 1.6rem;
+  }
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 10vw, 7rem);
+    line-height: .95;
+    letter-spacing: .03em;
+    color: #fff;
+    text-shadow: 0 0 60px rgba(0,229,255,.3);
+    margin-bottom: 1.4rem;
+  }
+  .hero-title span { color: var(--cyan); }
+  .hero-sub {
+    font-family: 'DM Sans', sans-serif; font-weight: 300; font-size: clamp(.95rem, 2.5vw, 1.2rem);
+    color: rgba(232,234,242,.7); max-width: 560px; margin: 0 auto 2.6rem;
+    line-height: 1.7;
+  }
+  .hero-stats {
+    display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;
+    margin-bottom: 3rem;
+  }
+  .hero-stat {
+    background: rgba(255,255,255,.06); border: 1px solid rgba(0,229,255,.2);
+    border-radius: 12px; padding: 1rem 1.6rem; min-width: 120px;
+  }
+  .hero-stat .num { font-family: 'Bebas Neue', sans-serif; font-size: 2.4rem; color: var(--cyan); line-height: 1; }
+  .hero-stat .lbl { font-size: .78rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-top: .3rem; }
+  .btn-primary {
+    font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 1rem;
+    letter-spacing: .12em; text-transform: uppercase;
+    background: var(--cyan); color: #04080f;
+    border: none; border-radius: 999px; padding: .85rem 2.8rem;
+    cursor: pointer; transition: all .25s;
+    box-shadow: 0 0 30px rgba(0,229,255,.35);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 50px rgba(0,229,255,.55); }
+  .scroll-hint { position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%); z-index: 2; opacity: .5; animation: bounce 2s infinite; }
+  .scroll-hint svg { width: 28px; height: 28px; fill: none; stroke: var(--cyan); stroke-width: 2; }
+  @keyframes bounce { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(6px); } }
+
+  /* ── PAGE 2 – INTRO ── */
+  #page2 { background: var(--bg2); padding: 0; }
+  .p2-hero {
+    position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #04080f 0%, #0a1628 50%, #04080f 100%);
+    padding: 5rem 2rem 4rem;
+    text-align: center;
+  }
+  .p2-hero::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(180,124,255,.12) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 50%, rgba(0,229,255,.08) 0%, transparent 60%);
+  }
+  .p2-content { position: relative; z-index: 2; max-width: 900px; margin: 0 auto; }
+  .section-label {
+    font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: .78rem;
+    letter-spacing: .2em; text-transform: uppercase; color: var(--purple);
+    margin-bottom: 1rem;
+  }
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2rem, 6vw, 4rem);
+    letter-spacing: .04em; color: #fff;
+    margin-bottom: 1rem;
+  }
+  .section-desc {
+    font-size: 1.05rem; color: rgba(232,234,242,.65); line-height: 1.75;
+    max-width: 680px; margin: 0 auto 3rem;
+  }
+  .cards-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.2rem; max-width: 1100px; margin: 0 auto 3rem; padding: 0 1.5rem;
+  }
+  .intro-card {
+    background: rgba(255,255,255,.04); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.6rem; text-align: left;
+    transition: all .3s; position: relative; overflow: hidden;
+  }
+  .intro-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+  .intro-card.c1::before { background: var(--cyan); }
+  .intro-card.c2::before { background: var(--gold); }
+  .intro-card.c3::before { background: var(--rose); }
+  .intro-card.c4::before { background: var(--green); }
+  .intro-card.c5::before { background: var(--purple); }
+  .intro-card.c6::before { background: #ff8c42; }
+  .intro-card:hover { background: rgba(255,255,255,.07); transform: translateY(-4px); }
+  .card-icon { font-size: 2rem; margin-bottom: .8rem; }
+  .card-title { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 1.05rem; color: #fff; margin-bottom: .5rem; }
+  .card-text { font-size: .88rem; color: var(--muted); line-height: 1.6; }
+  .dataset-note {
+    background: rgba(255,192,70,.08); border: 1px solid rgba(255,192,70,.25);
+    border-radius: 12px; padding: 1.2rem 1.6rem; max-width: 800px; margin: 0 auto 2.5rem;
+    text-align: left; display: flex; gap: 1rem; align-items: flex-start;
+  }
+  .dataset-note .icon { font-size: 1.4rem; flex-shrink: 0; margin-top: .1rem; }
+  .dataset-note p { font-size: .88rem; color: rgba(255,192,70,.85); line-height: 1.6; }
+  .dataset-note strong { color: var(--gold); }
+
+  /* ── PAGE 3 – DASHBOARD ── */
+  #page3 { padding-bottom: 4rem; }
+  .dash-header {
+    background: linear-gradient(to right, #04080f, #080f1c);
+    border-bottom: 1px solid var(--border);
+    padding: 1.6rem 2rem; display: flex; align-items: center; gap: 1.5rem;
+    flex-wrap: wrap; position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(20px);
+  }
+  .dash-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: .05em; color: var(--cyan); }
+  .dash-sub { font-size: .82rem; color: var(--muted); margin-top: .1rem; }
+  .kpi-strip {
+    display: flex; gap: 1rem; flex-wrap: wrap;
+    padding: 1.5rem 2rem; max-width: 1400px; margin: 0 auto;
+  }
+  .kpi {
+    flex: 1; min-width: 140px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.2rem 1.4rem;
+    position: relative; overflow: hidden;
+  }
+  .kpi::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+  }
+  .kpi.kpi-c::after { background: var(--cyan); }
+  .kpi.kpi-g::after { background: var(--gold); }
+  .kpi.kpi-r::after { background: var(--rose); }
+  .kpi.kpi-gr::after { background: var(--green); }
+  .kpi.kpi-p::after { background: var(--purple); }
+  .kpi-label { font-size: .75rem; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin-bottom: .4rem; }
+  .kpi-val { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; line-height: 1; color: #fff; }
+  .kpi-sub { font-size: .78rem; color: var(--muted); margin-top: .3rem; }
+
+  .dash-grid {
+    display: grid; grid-template-columns: repeat(12, 1fr);
+    gap: 1.2rem; max-width: 1400px; margin: 0 auto; padding: 0 2rem;
+  }
+  .chart-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.6rem; overflow: hidden;
+  }
+  .col-12 { grid-column: span 12; }
+  .col-8  { grid-column: span 8; }
+  .col-6  { grid-column: span 6; }
+  .col-4  { grid-column: span 4; }
+  @media (max-width: 900px) {
+    .col-8, .col-6, .col-4 { grid-column: span 12; }
+  }
+  @media (max-width: 600px) {
+    .col-12 { grid-column: span 12; }
+    .dash-grid { padding: 0 1rem; gap: 1rem; }
+    .kpi-strip { padding: 1rem; gap: .75rem; }
+    .kpi { min-width: calc(50% - .5rem); }
+  }
+
+  .chart-title {
+    font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 1rem;
+    color: #fff; margin-bottom: .3rem;
+  }
+  .chart-sub { font-size: .8rem; color: var(--muted); margin-bottom: 1.2rem; }
+  .chart-wrap { position: relative; height: 280px; }
+  .chart-wrap.tall { height: 340px; }
+  .chart-wrap.short { height: 220px; }
+  .analysis {
+    margin-top: 1.2rem; padding: 1rem 1.2rem;
+    background: rgba(255,255,255,.03); border-left: 3px solid var(--cyan);
+    border-radius: 0 8px 8px 0;
+  }
+  .analysis.gold { border-left-color: var(--gold); }
+  .analysis.rose { border-left-color: var(--rose); }
+  .analysis.green { border-left-color: var(--green); }
+  .analysis.purple { border-left-color: var(--purple); }
+  .analysis p { font-size: .85rem; color: rgba(232,234,242,.72); line-height: 1.65; }
+  .analysis strong { color: #fff; font-weight: 500; }
+
+  /* ── BACK BUTTON ── */
+  .btn-back {
+    font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: .85rem;
+    letter-spacing: .1em; text-transform: uppercase;
+    background: transparent; color: var(--cyan);
+    border: 1px solid rgba(0,229,255,.35); border-radius: 999px;
+    padding: .5rem 1.4rem; cursor: pointer; transition: all .25s;
+    display: inline-flex; align-items: center; gap: .5rem;
+  }
+  .btn-back:hover { background: rgba(0,229,255,.1); }
+  .btn-back svg { width: 14px; height: 14px; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: #020509; border-top: 1px solid var(--border);
+    padding: 2rem; text-align: center; margin-top: 3rem;
+  }
+  .footer-grid {
+    display: flex; flex-wrap: wrap; gap: 1rem;
+    justify-content: center; align-items: center;
+    font-size: .82rem; color: var(--muted);
+  }
+  .footer-grid span { display: flex; align-items: center; gap: .4rem; }
+  .footer-grid a { color: var(--cyan); text-decoration: none; }
+  .footer-divider { color: var(--border); }
+  .footer-note {
+    margin-top: 1rem; font-size: .78rem; color: rgba(122,128,153,.6);
+    max-width: 600px; margin: 1rem auto 0;
+  }
+  .project-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: .08em; color: var(--text); }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-in { animation: fadeUp .7s ease both; }
+
+  /* divider label */
+  .section-divider {
+    grid-column: span 12; display: flex; align-items: center; gap: 1rem; padding: .5rem 0;
+  }
+  .section-divider .sdl { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: .78rem;
+    letter-spacing: .18em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+  .section-divider .line { flex: 1; height: 1px; background: var(--border); }
+
+  /* donut legend */
+  .donut-legend { display: flex; flex-direction: column; gap: .7rem; justify-content: center; }
+  .dl-item { display: flex; align-items: center; gap: .7rem; font-size: .85rem; }
+  .dl-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .dl-val { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 1rem; color: #fff; }
+  .dl-name { color: var(--muted); font-size: .8rem; }
+  .donut-row { display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; }
+  .donut-row canvas { max-width: 220px; }
+
+  /* progress bars */
+  .prog-list { display: flex; flex-direction: column; gap: .9rem; }
+  .prog-item {}
+  .prog-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .4rem; }
+  .prog-name { font-size: .85rem; color: var(--text); }
+  .prog-pct { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: .95rem; }
+  .prog-bar { height: 8px; background: rgba(255,255,255,.07); border-radius: 999px; overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 999px; transition: width 1s cubic-bezier(.4,0,.2,1); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════ PAGE 1 ═══════ -->
+<section id="page1" class="page active">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-tag">🤖 Research Dashboard · 2030 Outlook</div>
+    <h1 class="hero-title">AI &amp; THE<br><span>FUTURE</span><br>OF WORK</h1>
+    <p class="hero-sub">A deep-dive into how Artificial Intelligence is reshaping careers, automation risk, salaries and the skills economy by 2030.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="num">3K</div><div class="lbl">Records</div></div>
+      <div class="hero-stat"><div class="num">20</div><div class="lbl">Job Titles</div></div>
+      <div class="hero-stat"><div class="num">18</div><div class="lbl">Data Fields</div></div>
+      <div class="hero-stat"><div class="num">3</div><div class="lbl">Risk Tiers</div></div>
+    </div>
+    <button class="btn-primary" onclick="goTo(2)">Explore Dashboard →</button>
+  </div>
+  <div class="scroll-hint">
+    <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ PAGE 2 ═══════ -->
+<section id="page2" class="page">
+  <div class="p2-hero">
+    <div class="p2-content fade-in">
+      <div style="text-align:left;margin-bottom:1.5rem;">
+        <button class="btn-back" onclick="goTo(1)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          Back
+        </button>
+      </div>
+      <div class="section-label">Dashboard Guide</div>
+      <h2 class="section-title">What's Inside This Dashboard</h2>
+      <p class="section-desc">This analytics dashboard dissects a Kaggle dataset of 3,000 job profiles across 20 occupations to reveal how AI exposure, automation risk, salary, and education intersect in the workforce of 2030.</p>
+    </div>
+  </div>
+
+  <div class="cards-grid">
+    <div class="intro-card c1">
+      <div class="card-icon">🎯</div>
+      <div class="card-title">Risk Category Breakdown</div>
+      <div class="card-text">How jobs split across High / Medium / Low automation risk tiers. Discover which category dominates and by how much.</div>
+    </div>
+    <div class="intro-card c2">
+      <div class="card-icon">💰</div>
+      <div class="card-title">Salary Landscape</div>
+      <div class="card-text">Average salaries across all 20 job titles — who earns the most, who earns least, and how much of a gap exists.</div>
+    </div>
+    <div class="intro-card c3">
+      <div class="card-icon">🤖</div>
+      <div class="card-title">Automation Probability</div>
+      <div class="card-text">Which roles face near-certain automation by 2030? Which are safest? Rankings of most-at-risk and most-resilient jobs.</div>
+    </div>
+    <div class="intro-card c4">
+      <div class="card-icon">🎓</div>
+      <div class="card-title">Education vs Risk</div>
+      <div class="card-text">Does higher education protect against automation? A stacked look at how risk distributes across schooling levels.</div>
+    </div>
+    <div class="intro-card c5">
+      <div class="card-icon">📈</div>
+      <div class="card-title">Experience & Automation</div>
+      <div class="card-text">Exploring whether years on the job correlates with lower automation odds — and where experience actually helps.</div>
+    </div>
+    <div class="intro-card c6">
+      <div class="card-icon">⚡</div>
+      <div class="card-title">AI Exposure Index</div>
+      <div class="card-text">The distribution of how much each job is touched by AI tools today — a leading indicator of future disruption.</div>
+    </div>
+  </div>
+
+  <div class="dataset-note" style="max-width:900px;margin:0 auto 2.5rem;padding:0 1.5rem;">
+    <div class="dataset-note">
+      <div class="icon">⚠️</div>
+      <p><strong>Important Note:</strong> All analysis in this dashboard is based solely on the provided Kaggle dataset sample (3,000 records). Results are illustrative of dataset trends only and do not represent the full global workforce. Figures should be interpreted in context and not as absolute predictions.</p>
+    </div>
+  </div>
+
+  <div style="text-align:center;padding:1rem 1.5rem 3rem;">
+    <button class="btn-primary" onclick="goTo(3)">Open Dashboard →</button>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ PAGE 3 ═══════ -->
+<section id="page3" class="page">
+
+  <!-- Sticky Header -->
+  <div class="dash-header">
+    <button class="btn-back" onclick="goTo(2)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
+    </button>
+    <div>
+      <div class="dash-title">AI Jobs 2030 — Analytics Dashboard</div>
+      <div class="dash-sub">Dataset: 3,000 records · 20 Job Titles · Source: Kaggle</div>
+    </div>
+  </div>
+
+  <!-- KPI Strip -->
+  <div class="kpi-strip">
+    <div class="kpi kpi-c">
+      <div class="kpi-label">Avg. Salary</div>
+      <div class="kpi-val">$89.4K</div>
+      <div class="kpi-sub">Range: $30K – $150K</div>
+    </div>
+    <div class="kpi kpi-r">
+      <div class="kpi-label">High-Risk Jobs</div>
+      <div class="kpi-val">24.7%</div>
+      <div class="kpi-sub">740 of 3,000 profiles</div>
+    </div>
+    <div class="kpi kpi-gr">
+      <div class="kpi-label">Low-Risk Jobs</div>
+      <div class="kpi-val">24.6%</div>
+      <div class="kpi-sub">739 of 3,000 profiles</div>
+    </div>
+    <div class="kpi kpi-g">
+      <div class="kpi-label">Medium-Risk Jobs</div>
+      <div class="kpi-val">50.7%</div>
+      <div class="kpi-sub">1,521 of 3,000 profiles</div>
+    </div>
+    <div class="kpi kpi-p">
+      <div class="kpi-label">Highest Auto. Risk</div>
+      <div class="kpi-val">83.5%</div>
+      <div class="kpi-sub">Retail Worker</div>
+    </div>
+  </div>
+
+  <!-- Dashboard Grid -->
+  <div class="dash-grid">
+
+    <!-- ── DIVIDER ── -->
+    <div class="section-divider">
+      <div class="sdl">Risk Overview</div>
+      <div class="line"></div>
+    </div>
+
+    <!-- 1. Risk Donut -->
+    <div class="chart-card col-4">
+      <div class="chart-title">Risk Category Distribution</div>
+      <div class="chart-sub">Proportion of jobs by automation risk tier</div>
+      <div class="donut-row">
+        <div class="chart-wrap short" style="flex:0 0 180px;height:180px;">
+          <canvas id="riskDonut"></canvas>
+        </div>
+        <div class="donut-legend">
+          <div class="dl-item">
+            <div class="dl-dot" style="background:#ffc046"></div>
+            <div>
+              <div class="dl-val">50.7%</div>
+              <div class="dl-name">Medium Risk</div>
+            </div>
+          </div>
+          <div class="dl-item">
+            <div class="dl-dot" style="background:#ff5c7d"></div>
+            <div>
+              <div class="dl-val">24.7%</div>
+              <div class="dl-name">High Risk</div>
+            </div>
+          </div>
+          <div class="dl-item">
+            <div class="dl-dot" style="background:#39e09b"></div>
+            <div>
+              <div class="dl-val">24.6%</div>
+              <div class="dl-name">Low Risk</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="analysis">
+        <p>The workforce is <strong>evenly split between safe and vulnerable</strong> — half sit in the grey "medium" zone, making them prime candidates for partial AI augmentation rather than full replacement.</p>
+      </div>
+    </div>
+
+    <!-- 2. Education Distribution (Polar) -->
+    <div class="chart-card col-4">
+      <div class="chart-title">Education Level Distribution</div>
+      <div class="chart-sub">Spread across 4 qualification tiers</div>
+      <div class="chart-wrap short" style="height:220px;">
+        <canvas id="eduPolar"></canvas>
+      </div>
+      <div class="analysis gold">
+        <p>Education is <strong>near-uniformly distributed</strong> across the dataset — ~25% each — indicating the sample captures the full spectrum from High School to PhD rather than skewing towards one tier.</p>
+      </div>
+    </div>
+
+    <!-- 3. Records by Job (Horizontal bar) -->
+    <div class="chart-card col-4">
+      <div class="chart-title">Sample Size per Job Title</div>
+      <div class="chart-sub">Number of records per occupation</div>
+      <div class="chart-wrap tall">
+        <canvas id="jobCount"></canvas>
+      </div>
+      <div class="analysis purple">
+        <p><strong>Software Engineer leads</strong> with 175 records, while most roles cluster between 150–167. The near-equal sampling ensures unbiased cross-job comparisons throughout this dashboard.</p>
+      </div>
+    </div>
+
+    <!-- ── DIVIDER ── -->
+    <div class="section-divider">
+      <div class="sdl">Automation Risk</div>
+      <div class="line"></div>
+    </div>
+
+    <!-- 4. Automation Probability - Top 10 Horizontal Bar -->
+    <div class="chart-card col-8">
+      <div class="chart-title">Automation Probability by Job Title — 2030</div>
+      <div class="chart-sub">Average likelihood of automation for each occupation (0–1 scale)</div>
+      <div class="chart-wrap tall" style="height:380px;">
+        <canvas id="autoBar"></canvas>
+      </div>
+      <div class="analysis rose">
+        <p><strong>Retail Workers (83.5%), Security Guards (83.3%), Construction Workers (82.6%), Customer Support (82.5%), and Truck Drivers (81.9%)</strong> face near-certain disruption by 2030. Meanwhile <strong>AI Engineers (17.2%), Research Scientists (17.4%), Nurses (17.6%), Teachers (17.6%)</strong> are robustly insulated — jobs requiring creativity, empathy and physical judgment remain human-centric.</p>
+      </div>
+    </div>
+
+    <!-- 5. Automation progress bars - top 5 risky vs safe -->
+    <div class="chart-card col-4">
+      <div class="chart-title">Top 5 — Most vs Least at Risk</div>
+      <div class="chart-sub">Automation probability bar view</div>
+      <div style="margin-bottom:1rem;">
+        <div style="font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;color:var(--rose);margin-bottom:.6rem;">🔴 Highest Risk</div>
+        <div class="prog-list" id="progHigh"></div>
+      </div>
+      <div>
+        <div style="font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;color:var(--green);margin-bottom:.6rem;">🟢 Lowest Risk</div>
+        <div class="prog-list" id="progLow"></div>
+      </div>
+      <div class="analysis green">
+        <p>The gap between safest and riskiest spans over <strong>65 percentage points</strong> — underscoring just how unevenly AI disruption will distribute across the workforce.</p>
+      </div>
+    </div>
+
+    <!-- ── DIVIDER ── -->
+    <div class="section-divider">
+      <div class="sdl">Salary Analysis</div>
+      <div class="line"></div>
+    </div>
+
+    <!-- 6. Salary by Job - Bar -->
+    <div class="chart-card col-12">
+      <div class="chart-title">Average Salary by Job Title</div>
+      <div class="chart-sub">USD · Annual average per occupation in the dataset</div>
+      <div class="chart-wrap" style="height:300px;">
+        <canvas id="salaryBar"></canvas>
+      </div>
+      <div class="analysis gold">
+        <p><strong>Graphic Designers top the salary table at $96,423</strong> — a surprising lead given their medium-to-high automation exposure. <strong>Lawyers ($92,442) and Chefs ($91,408)</strong> follow. <strong>Truck Drivers ($84,520)</strong> sit lowest, facing both the lowest pay and very high automation risk — a double vulnerability. The salary spread across all jobs is relatively narrow (~$12K), suggesting compensation may not fully price in future disruption risk yet.</p>
+      </div>
+    </div>
+
+    <!-- 7. Salary vs Automation Scatter -->
+    <div class="chart-card col-8">
+      <div class="chart-title">Salary vs Automation Risk — Bubble View</div>
+      <div class="chart-sub">Each bubble = 1 job title · Size = number of records · Color = risk tier</div>
+      <div class="chart-wrap tall">
+        <canvas id="scatterChart"></canvas>
+      </div>
+      <div class="analysis">
+        <p>No strong positive correlation between salary and safety. <strong>High-paying jobs can still be high-risk</strong> (e.g. Graphic Designer), while some lower-paid jobs like Nurses are very protected. This challenges the assumption that earning more guarantees job security against AI.</p>
+      </div>
+    </div>
+
+    <!-- 8. Salary by Risk Category -->
+    <div class="chart-card col-4">
+      <div class="chart-title">Avg. Salary by Risk Category</div>
+      <div class="chart-sub">Do safer jobs pay more?</div>
+      <div class="chart-wrap short" style="height:220px;">
+        <canvas id="salaryRisk"></canvas>
+      </div>
+      <div class="analysis gold">
+        <p>Counterintuitively, <strong>Medium-risk jobs pay slightly the most ($90,451)</strong> and High-risk jobs the least ($87,359). The difference is only ~$3K — salary alone is a <strong>poor predictor of automation risk</strong>.</p>
+      </div>
+    </div>
+
+    <!-- ── DIVIDER ── -->
+    <div class="section-divider">
+      <div class="sdl">Education & Experience</div>
+      <div class="line"></div>
+    </div>
+
+    <!-- 9. Risk by Education - Stacked Bar -->
+    <div class="chart-card col-6">
+      <div class="chart-title">Risk Distribution by Education Level</div>
+      <div class="chart-sub">Stacked count of High / Medium / Low risk per degree</div>
+      <div class="chart-wrap">
+        <canvas id="riskEduStacked"></canvas>
+      </div>
+      <div class="analysis purple">
+        <p><strong>Higher education doesn't dramatically lower risk</strong> — PhDs and High School graduates both show very similar High/Low risk ratios (~23%). The strongest protection comes from job type, not degree level. Medium-risk dominates every education tier.</p>
+      </div>
+    </div>
+
+    <!-- 10. Automation by Experience - Line -->
+    <div class="chart-card col-6">
+      <div class="chart-title">Automation Probability by Experience Level</div>
+      <div class="chart-sub">Does more experience = lower automation risk?</div>
+      <div class="chart-wrap">
+        <canvas id="expLine"></canvas>
+      </div>
+      <div class="analysis green">
+        <p>Workers with <strong>11–15 years' experience see the lowest automation risk (48.2%)</strong>, forming a sweet-spot "mid-career shield." Very early-career workers (0–5 yrs) face the highest risk at 52%. Experience provides some buffer, but <strong>it's not a reliable shield alone</strong> — job category matters more.</p>
+      </div>
+    </div>
+
+    <!-- ── DIVIDER ── -->
+    <div class="section-divider">
+      <div class="sdl">AI Exposure & Tech Growth</div>
+      <div class="line"></div>
+    </div>
+
+    <!-- 11. AI Exposure by Risk - Radar -->
+    <div class="chart-card col-6">
+      <div class="chart-title">AI Exposure Index by Risk Category</div>
+      <div class="chart-sub">How exposed each risk group is to AI tools today</div>
+      <div class="chart-wrap">
+        <canvas id="radarChart"></canvas>
+      </div>
+      <div class="analysis">
+        <p>All three risk tiers show <strong>nearly identical AI exposure (~0.50)</strong> — meaning current AI exposure is not what drives the risk rating. The risk is driven by the nature of tasks, not how much AI workers already use in their jobs today.</p>
+      </div>
+    </div>
+
+    <!-- 12. Tech Growth Factor - Line/Area -->
+    <div class="chart-card col-6">
+      <div class="chart-title">Tech Growth Factor by Risk Category</div>
+      <div class="chart-sub">Rate of technological change impacting each risk group</div>
+      <div class="chart-wrap">
+        <canvas id="techGrowth"></canvas>
+      </div>
+      <div class="analysis rose">
+        <p><strong>Medium-risk jobs experience the highest tech growth (1.0003)</strong>, suggesting they're at an inflection point — currently manageable, but rapid tech change could push them into High-risk territory by 2030. <strong>Low-risk jobs see the slowest growth (0.981)</strong>, indicating greater structural stability.</p>
+      </div>
+    </div>
+
+    <!-- ── DIVIDER ── -->
+    <div class="section-divider">
+      <div class="sdl">Jobs at a Glance</div>
+      <div class="line"></div>
+    </div>
+
+    <!-- 13. Full heatmap-style table -->
+    <div class="chart-card col-12">
+      <div class="chart-title">All 20 Jobs — Comprehensive Snapshot</div>
+      <div class="chart-sub">Avg Salary · Automation Risk · AI Exposure · Tech Growth · Risk Category</div>
+      <div style="overflow-x:auto;margin-top:1rem;">
+        <table id="jobTable" style="width:100%;border-collapse:collapse;font-size:.83rem;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border);">
+              <th style="text-align:left;padding:.6rem .8rem;color:var(--muted);font-weight:500;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;">Job Title</th>
+              <th style="text-align:right;padding:.6rem .8rem;color:var(--muted);font-weight:500;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;">Avg Salary</th>
+              <th style="text-align:right;padding:.6rem .8rem;color:var(--muted);font-weight:500;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;">Auto. Prob.</th>
+              <th style="text-align:right;padding:.6rem .8rem;color:var(--muted);font-weight:500;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;">AI Exposure</th>
+              <th style="padding:.6rem .8rem;color:var(--muted);font-weight:500;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;text-align:center;">Risk</th>
+            </tr>
+          </thead>
+          <tbody id="jobTableBody"></tbody>
+        </table>
+      </div>
+      <div class="analysis" style="margin-top:1.5rem;">
+        <p><strong>Sorting through all 20 occupations</strong> reveals a clear pattern: jobs requiring physical presence + routine tasks (Retail, Security, Construction) are most vulnerable, while knowledge-intensive + human-touch roles (AI Engineer, Nurse, Teacher, Doctor) remain resilient. Notably, <strong>AI Engineers have the lowest automation risk</strong> — AI is unlikely to replace those who build it.</p>
+      </div>
+    </div>
+
+  </div><!-- /dash-grid -->
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-grid">
+      <span class="project-name">AI Impact on Jobs 2030</span>
+      <span class="footer-divider">·</span>
+      <span>Built by <strong style="color:var(--text)">Abarna.S</strong></span>
+      <span class="footer-divider">·</span>
+      <span>Data Source: <a href="https://www.kaggle.com" target="_blank">Kaggle</a></span>
+      <span class="footer-divider">·</span>
+      <span>Powered by Chart.js</span>
+    </div>
+    <div class="footer-note">
+      ⚠️ This analysis dashboard is done on the basis of the given dataset sample only — not the whole global workforce data. All statistics, charts and insights reflect dataset trends and are illustrative in nature.
+    </div>
+  </footer>
+
+</section>
+
+<script>
+// ── Navigation ──────────────────────────────────────────────
+function goTo(n) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page' + n).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (n === 3) initDashboard();
+}
+
+// ── Chart defaults ──────────────────────────────────────────
+Chart.defaults.color = '#7a8099';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+Chart.defaults.font.family = 'DM Sans';
+
+let chartsInited = false;
+
+function initDashboard() {
+  if (chartsInited) return;
+  chartsInited = true;
+
+  const C = (id) => document.getElementById(id).getContext('2d');
+
+  // ── DATA ──────────────────────────────────
+  const jobData = [
+    { name:'Software Engineer', salary:90265, auto:0.509, exp:0.39, risk:'Medium', n:175 },
+    { name:'UX Researcher',      salary:87982, auto:0.492, exp:0.51, risk:'Medium', n:167 },
+    { name:'Data Scientist',     salary:90630, auto:0.496, exp:0.44, risk:'Medium', n:167 },
+    { name:'Teacher',            salary:90886, auto:0.176, exp:0.38, risk:'Low',    n:166 },
+    { name:'Graphic Designer',   salary:96423, auto:0.529, exp:0.62, risk:'Medium', n:160 },
+    { name:'HR Specialist',      salary:89242, auto:0.491, exp:0.48, risk:'Medium', n:157 },
+    { name:'Construction Worker',salary:90800, auto:0.826, exp:0.71, risk:'High',   n:156 },
+    { name:'Retail Worker',      salary:87208, auto:0.835, exp:0.68, risk:'High',   n:155 },
+    { name:'Security Guard',     salary:87290, auto:0.833, exp:0.64, risk:'High',   n:154 },
+    { name:'Truck Driver',       salary:84520, auto:0.819, exp:0.55, risk:'High',   n:153 },
+    { name:'AI Engineer',        salary:90760, auto:0.172, exp:0.43, risk:'Low',    n:140 },
+    { name:'Research Scientist', salary:87205, auto:0.174, exp:0.39, risk:'Low',    n:149 },
+    { name:'Nurse',              salary:88955, auto:0.176, exp:0.41, risk:'Low',    n:142 },
+    { name:'Doctor',             salary:89092, auto:0.177, exp:0.38, risk:'Low',    n:132 },
+    { name:'Financial Analyst',  salary:88030, auto:0.485, exp:0.52, risk:'Medium', n:151 },
+    { name:'Mechanic',           salary:89808, auto:0.485, exp:0.58, risk:'Medium', n:136 },
+    { name:'Lawyer',             salary:92442, auto:0.486, exp:0.45, risk:'Medium', n:132 },
+    { name:'Chef',               salary:91408, auto:0.496, exp:0.53, risk:'Medium', n:141 },
+    { name:'Marketing Manager',  salary:86458, auto:0.495, exp:0.47, risk:'Medium', n:134 },
+    { name:'Customer Support',   salary:87487, auto:0.825, exp:0.66, risk:'High',   n:133 },
+  ];
+
+  const CYAN='#00e5ff', GOLD='#ffc046', ROSE='#ff5c7d', GREEN='#39e09b', PURPLE='#b47cff';
+
+  // ── 1. Risk Donut ──────────────────────────────────────────
+  new Chart(C('riskDonut'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Medium', 'High', 'Low'],
+      datasets: [{ data:[50.7,24.7,24.6], backgroundColor:[GOLD,ROSE,GREEN], borderWidth:0, hoverOffset:8 }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:true,
+      cutout:'72%',
+      plugins: { legend:{ display:false }, tooltip:{ callbacks:{ label:(c)=>' '+c.label+': '+c.raw+'%' } } }
+    }
+  });
+
+  // ── 2. Education Polar ─────────────────────────────────────
+  new Chart(C('eduPolar'), {
+    type: 'polarArea',
+    data: {
+      labels:['High School','Bachelor\'s','Master\'s','PhD'],
+      datasets:[{ data:[784,765,735,716],
+        backgroundColor:['rgba(0,229,255,.3)','rgba(255,192,70,.3)','rgba(180,124,255,.3)','rgba(57,224,155,.3)'],
+        borderColor:[CYAN,GOLD,PURPLE,GREEN], borderWidth:2 }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'right', labels:{ boxWidth:10, padding:12, font:{size:11} } } },
+      scales:{ r:{ ticks:{ display:false }, grid:{ color:'rgba(255,255,255,.06)' } } }
+    }
+  });
+
+  // ── 3. Job Count bar ──────────────────────────────────────
+  const sortedJ = [...jobData].sort((a,b)=>b.n-a.n);
+  new Chart(C('jobCount'), {
+    type:'bar',
+    data:{
+      labels: sortedJ.map(j=>j.name),
+      datasets:[{ data:sortedJ.map(j=>j.n), backgroundColor:PURPLE+'99', borderColor:PURPLE, borderWidth:1.5, borderRadius:4 }]
+    },
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        x:{ ticks:{font:{size:11}}, grid:{color:'rgba(255,255,255,.04)'} },
+        y:{ ticks:{font:{size:10}} }
+      }
+    }
+  });
+
+  // ── 4. Automation Bar ─────────────────────────────────────
+  const sorted = [...jobData].sort((a,b)=>b.auto-a.auto);
+  const autoColors = sorted.map(j => j.risk==='High'?ROSE : j.risk==='Low'?GREEN : GOLD+'cc');
+  new Chart(C('autoBar'), {
+    type:'bar',
+    data:{
+      labels: sorted.map(j=>j.name),
+      datasets:[{ data:sorted.map(j=>(j.auto*100).toFixed(1)), backgroundColor:autoColors, borderRadius:5, borderSkipped:false }]
+    },
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{ callbacks:{ label:(c)=>' Automation: '+c.raw+'%' } }
+      },
+      scales:{
+        x:{ min:0, max:100, ticks:{callback:v=>v+'%', font:{size:11}}, grid:{color:'rgba(255,255,255,.04)'} },
+        y:{ ticks:{font:{size:10.5}} }
+      }
+    }
+  });
+
+  // ── 5. Progress bars ──────────────────────────────────────
+  const highRisk = sorted.slice(0,5);
+  const lowRisk  = [...sorted].reverse().slice(0,5);
+  const makeProgs = (list, cont, col) => {
+    const el = document.getElementById(cont);
+    list.forEach(j=>{
+      const pct = (j.auto*100).toFixed(1);
+      el.innerHTML += `
+        <div class="prog-item">
+          <div class="prog-header">
+            <span class="prog-name">${j.name}</span>
+            <span class="prog-pct" style="color:${col}">${pct}%</span>
+          </div>
+          <div class="prog-bar">
+            <div class="prog-fill" style="width:${pct}%;background:${col}"></div>
+          </div>
+        </div>`;
+    });
+  };
+  makeProgs(highRisk,'progHigh',ROSE);
+  makeProgs(lowRisk,'progLow',GREEN);
+
+  // ── 6. Salary Bar ─────────────────────────────────────────
+  const salSorted = [...jobData].sort((a,b)=>b.salary-a.salary);
+  new Chart(C('salaryBar'), {
+    type:'bar',
+    data:{
+      labels:salSorted.map(j=>j.name),
+      datasets:[{
+        data:salSorted.map(j=>j.salary),
+        backgroundColor: salSorted.map(j=>j.risk==='High'?ROSE+'bb':j.risk==='Low'?GREEN+'bb':CYAN+'99'),
+        borderRadius:6
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(c)=>' $'+Number(c.raw).toLocaleString() } } },
+      scales:{
+        x:{ ticks:{font:{size:10}, maxRotation:35}, grid:{display:false} },
+        y:{ ticks:{callback:v=>'$'+v/1000+'K', font:{size:11}}, grid:{color:'rgba(255,255,255,.04)'} }
+      }
+    }
+  });
+
+  // ── 7. Scatter ────────────────────────────────────────────
+  const scatterData = jobData.map(j=>({
+    x: (j.auto*100).toFixed(1),
+    y: j.salary,
+    r: Math.max(j.n/12, 8),
+    label: j.name,
+    risk: j.risk
+  }));
+  const riskCol = r => r==='High'?ROSE : r==='Low'?GREEN : GOLD;
+  new Chart(C('scatterChart'), {
+    type:'bubble',
+    data:{
+      datasets: jobData.map(j=>({
+        label:j.name,
+        data:[{ x:parseFloat((j.auto*100).toFixed(1)), y:j.salary, r:Math.max(j.n/14,7) }],
+        backgroundColor: riskCol(j.risk)+'88',
+        borderColor: riskCol(j.risk),
+        borderWidth:1.5
+      }))
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{ callbacks:{
+          label:(c)=>{
+            const d=c.raw;
+            return ` ${c.dataset.label} | Auto: ${d.x}% | Salary: $${d.y.toLocaleString()}`;
+          }
+        }}
+      },
+      scales:{
+        x:{title:{display:true,text:'Automation Probability (%)',font:{size:11}}, ticks:{callback:v=>v+'%'}, grid:{color:'rgba(255,255,255,.04)'}},
+        y:{title:{display:true,text:'Average Salary ($)',font:{size:11}}, ticks:{callback:v=>'$'+v/1000+'K'}, grid:{color:'rgba(255,255,255,.04)'}}
+      }
+    }
+  });
+
+  // ── 8. Salary by Risk ─────────────────────────────────────
+  new Chart(C('salaryRisk'), {
+    type:'bar',
+    data:{
+      labels:['High Risk','Low Risk','Medium Risk'],
+      datasets:[{ data:[87359,89167,90451], backgroundColor:[ROSE,GREEN,GOLD], borderRadius:6 }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        x:{ ticks:{font:{size:11}}, grid:{display:false} },
+        y:{ min:85000, ticks:{callback:v=>'$'+v/1000+'K', font:{size:11}}, grid:{color:'rgba(255,255,255,.04)'} }
+      }
+    }
+  });
+
+  // ── 9. Risk by Education Stacked ──────────────────────────
+  new Chart(C('riskEduStacked'), {
+    type:'bar',
+    data:{
+      labels:['High School','Bachelor\'s','Master\'s','PhD'],
+      datasets:[
+        { label:'High',   data:[187,188,188,177], backgroundColor:ROSE+'cc', borderRadius:3 },
+        { label:'Low',    data:[182,190,188,179], backgroundColor:GREEN+'cc', borderRadius:3 },
+        { label:'Medium', data:[415,387,359,360], backgroundColor:GOLD+'cc', borderRadius:3 }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'top', labels:{ boxWidth:12, padding:15 } } },
+      scales:{
+        x:{ stacked:true, grid:{display:false} },
+        y:{ stacked:true, grid:{color:'rgba(255,255,255,.04)'} }
+      }
+    }
+  });
+
+  // ── 10. Experience Line ───────────────────────────────────
+  new Chart(C('expLine'), {
+    type:'line',
+    data:{
+      labels:['0–5 yrs','6–10 yrs','11–15 yrs','16–20 yrs','21–30 yrs'],
+      datasets:[{
+        label:'Automation Probability',
+        data:[52.0, 51.2, 48.2, 50.0, 49.7],
+        borderColor:CYAN, backgroundColor:'rgba(0,229,255,.08)',
+        fill:true, tension:.45, pointBackgroundColor:CYAN, pointRadius:5, pointHoverRadius:8
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        x:{ grid:{color:'rgba(255,255,255,.04)'} },
+        y:{ min:46, max:54, ticks:{callback:v=>v+'%'}, grid:{color:'rgba(255,255,255,.04)'} }
+      }
+    }
+  });
+
+  // ── 11. Radar – AI Exposure ───────────────────────────────
+  new Chart(C('radarChart'), {
+    type:'radar',
+    data:{
+      labels:['AI Exposure','Tech Growth','Avg Salary (norm)','Auto. Prob','Exp. Yrs (norm)'],
+      datasets:[
+        {
+          label:'High Risk', data:[50.9,50.0,58.3,82.2,49.2],
+          borderColor:ROSE, backgroundColor:ROSE+'22', pointBackgroundColor:ROSE
+        },
+        {
+          label:'Medium Risk', data:[49.9,50.0,60.3,49.8,49.1],
+          borderColor:GOLD, backgroundColor:GOLD+'22', pointBackgroundColor:GOLD
+        },
+        {
+          label:'Low Risk', data:[49.6,49.1,59.4,17.4,49.0],
+          borderColor:GREEN, backgroundColor:GREEN+'22', pointBackgroundColor:GREEN
+        }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'top', labels:{ boxWidth:10, padding:14, font:{size:11} } } },
+      scales:{ r:{ min:0, max:100, ticks:{display:false}, grid:{color:'rgba(255,255,255,.08)'}, pointLabels:{font:{size:11}} } }
+    }
+  });
+
+  // ── 12. Tech Growth bar ───────────────────────────────────
+  new Chart(C('techGrowth'), {
+    type:'bar',
+    data:{
+      labels:['High Risk','Low Risk','Medium Risk'],
+      datasets:[{
+        data:[0.9998,0.9812,1.0003],
+        backgroundColor:[ROSE+'aa',GREEN+'aa',GOLD+'aa'],
+        borderRadius:6
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        x:{ grid:{display:false} },
+        y:{
+          min:0.975, max:1.005,
+          ticks:{ callback:v=>v.toFixed(3), font:{size:11} },
+          grid:{color:'rgba(255,255,255,.04)'}
+        }
+      }
+    }
+  });
+
+  // ── 13. Job Table ─────────────────────────────────────────
+  const tbody = document.getElementById('jobTableBody');
+  const riskBadge = r => {
+    const c = r==='High'?ROSE : r==='Low'?GREEN : GOLD;
+    return `<span style="background:${c}22;color:${c};border:1px solid ${c}55;border-radius:999px;padding:.2rem .7rem;font-size:.75rem;font-family:'Rajdhani',sans-serif;font-weight:700;">${r}</span>`;
+  };
+  const autoBar2 = (v) => {
+    const pct=(v*100).toFixed(0);
+    const c = v>0.7?ROSE:v<0.25?GREEN:GOLD;
+    return `<div style="display:flex;align-items:center;gap:.5rem;justify-content:flex-end;">
+      <div style="width:70px;height:6px;background:rgba(255,255,255,.07);border-radius:999px;overflow:hidden;">
+        <div style="width:${pct}%;height:100%;background:${c};border-radius:999px;"></div>
+      </div>
+      <span style="font-family:'Rajdhani',sans-serif;font-weight:700;color:${c};min-width:36px;text-align:right">${pct}%</span>
+    </div>`;
+  };
+  const salSortedAll = [...jobData].sort((a,b)=>b.salary-a.salary);
+  salSortedAll.forEach((j,i) => {
+    const odd = i%2===1;
+    tbody.innerHTML += `<tr style="border-bottom:1px solid rgba(255,255,255,.04);background:${odd?'rgba(255,255,255,.02)':'transparent'}">
+      <td style="padding:.65rem .8rem;font-weight:500">${j.name}</td>
+      <td style="padding:.65rem .8rem;text-align:right;font-family:'Rajdhani',sans-serif;font-size:.95rem;color:${CYAN}">$${j.salary.toLocaleString()}</td>
+      <td style="padding:.65rem .8rem;">${autoBar2(j.auto)}</td>
+      <td style="padding:.65rem .8rem;text-align:right">${(j.exp*100).toFixed(0)}%</td>
+      <td style="padding:.65rem .8rem;text-align:center">${riskBadge(j.risk)}</td>
+    </tr>`;
+  });
+}
+</script>
+</body>
+</html>
